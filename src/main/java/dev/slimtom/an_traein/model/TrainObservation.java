@@ -6,18 +6,16 @@ public class TrainObservation {
     private String origin;
     private String destination;
     private String station;
-    private String boardType;
     private String scheduledTime;
     private String expectedTime;
     private int delayMinutes;
     private String observedAt;
 
-    public TrainObservation(String trainCode, String origin, String destination, String station, String boardType, String scheduledTime, String expectedTime, int delayMinutes, String observedAt) {
+    public TrainObservation(String trainCode, String origin, String destination, String station, String scheduledTime, String expectedTime, int delayMinutes, String observedAt) {
         this.trainCode = trainCode;
         this.origin = origin;
         this.destination = destination;
         this.station = station;
-        this.boardType = boardType;
         this.scheduledTime = scheduledTime;
         this.expectedTime = expectedTime;
         this.delayMinutes = delayMinutes;
@@ -38,10 +36,6 @@ public class TrainObservation {
 
     public String getStation() {
         return station;
-    }
-
-    public String getBoardType() {
-        return boardType;
     }
 
     public String getScheduledTime() {
