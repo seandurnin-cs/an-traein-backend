@@ -3,6 +3,7 @@ package dev.slimtom.an_traein.model;
 public class TrainObservation {
 
     private String serverTime;
+    private String observedTime;
     private String trainCode;
     private String stationFullName;
     private String stationCode;
@@ -24,13 +25,14 @@ public class TrainObservation {
     private String trainType;
     private String locationType;
 
-    public TrainObservation(String serverTime, String trainCode, String stationFullName, String stationCode,
+    public TrainObservation(String serverTime, String observedTime, String trainCode, String stationFullName, String stationCode,
             String queryTime, String trainDate, String origin, String destination, String originTime,
             String destinationTime, String status,
             String lastLocation, int dueIn, int late,
             String expArrival, String expDepart, String schArrival, String schDepart, String direction, String trainType,
             String locationType) {
         this.serverTime = serverTime;
+        this.observedTime = observedTime;
         this.trainCode = trainCode;
         this.stationFullName = stationFullName;
         this.stationCode = stationCode;
@@ -57,6 +59,10 @@ public class TrainObservation {
         return serverTime;
     }
 
+    public String getObservedTime() {
+        return observedTime;
+    }
+
     public String getTrainCode() {
         return trainCode;
     }
@@ -69,7 +75,7 @@ public class TrainObservation {
         return stationCode;
     }
 
-    public String getQueryTme() {
+    public String getQueryTime() {
         return queryTime;
     }
 
@@ -133,7 +139,7 @@ public class TrainObservation {
         return trainType;
     }
 
-    public String getObservedAt() {
+    public String getLocationType() {
         return locationType;
     }
 }
