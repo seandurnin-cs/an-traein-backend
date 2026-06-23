@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.stereotype.Service;
 
 import dev.slimtom.an_traein.client.IrishRailClient;
 import dev.slimtom.an_traein.model.TrainObservation;
@@ -25,7 +24,6 @@ public class TrainObservationService {
         this.trainObservationRepository = trainObservationRepository;
     }
 
-    @GetMapping("/irishrail/observations")
     public List<TrainObservation> getIrishRailObservations(
             @RequestParam(defaultValue = "Mullingar") String station) throws Exception {
         String rawXml = irishRailClient.getRawStationData(station);
@@ -38,5 +36,9 @@ public class TrainObservationService {
         List<TrainObservation> observations = irishRailXmlParser.parseStationData(rawXml);
 
         return trainObservationRepository.saveAll(observations);
+    }
+
+    public List<TrainObservation> getStoredObservations() {
+        return trainObservationRepository.findAll();
     }
 }
