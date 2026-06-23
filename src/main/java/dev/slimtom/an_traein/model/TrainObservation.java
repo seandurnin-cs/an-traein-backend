@@ -1,7 +1,18 @@
 package dev.slimtom.an_traein.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "train_observations")
 public class TrainObservation {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     private String serverTime;
     private String observedTime;
     private String trainCode;
@@ -24,6 +35,10 @@ public class TrainObservation {
     private String direction;
     private String trainType;
     private String locationType;
+
+    protected TrainObservation() {
+
+    }
 
     public TrainObservation(String serverTime, String observedTime, String trainCode, String stationFullName, String stationCode,
             String queryTime, String trainDate, String origin, String destination, String originTime,
@@ -55,6 +70,10 @@ public class TrainObservation {
         this.locationType = locationType;
     }
 
+    public Long getId() {
+        return id;
+    }
+    
     public String getServerTime() {
         return serverTime;
     }
