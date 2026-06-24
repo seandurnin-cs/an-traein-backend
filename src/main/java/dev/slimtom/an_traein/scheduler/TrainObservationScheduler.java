@@ -3,10 +3,12 @@ package dev.slimtom.an_traein.scheduler;
 import dev.slimtom.an_traein.service.TrainObservationService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 import java.util.List;
 
 @Component
+@ConditionalOnProperty(name = "antraein.tracker.enabled", havingValue = "true")
 public class TrainObservationScheduler {
     
     private final TrainObservationService trainObservationService;

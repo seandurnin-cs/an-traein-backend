@@ -54,7 +54,7 @@ public class IrishRailXmlParser {
                 getText(trainElement, "Status"),
                 getText(trainElement, "Lastlocation"),
                 parseInt(getText(trainElement, "Duein")),
-                parseInt(getText(trainElement, "late")),
+                parseInt(getText(trainElement, "Late")),
                 getText(trainElement, "Exparrival"),
                 getText(trainElement, "Expdepart"),
                 getText(trainElement, "Scharrival"),
