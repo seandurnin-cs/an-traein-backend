@@ -2,6 +2,8 @@ package dev.slimtom.an_traein.controller;
 
 import dev.slimtom.an_traein.model.TrainObservation;
 import dev.slimtom.an_traein.service.TrainObservationService;
+
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;

@@ -1,0 +1,35 @@
+package dev.slimtom.an_traein.scheduler;
+
+import dev.slimtom.an_traein.service.TrainObservationService;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+
+@Component
+public class TrainObservationScheduler {
+    
+    private final TrainObservationService trainObservationService;
+
+    private final List<String> stationsToTrack = List.of(
+        "Maynooth",
+        "Mullingar"
+    );
+
+    public TrainObservationScheduler(TrainObservationService trainObservationService) {
+        this.trainObservationService = trainObservationService;
+    }
+
+    @Scheduled(fixedRate = 60000)
+    public void collectTrainObservations() {
+        for(String station : stationsToTrack) {
+            try {
+                trainObservationService.fetchAndSaveObservations(station);
+                System.out.println("Saved observations for station: " + station);
+            } catch (Exception e) {
+                System.out.println("Failed to save observations for station: " + station);
+                e.printStackTrace();
+            }
+        }
+    }
+}
