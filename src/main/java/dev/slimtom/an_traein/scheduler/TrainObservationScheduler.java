@@ -12,8 +12,21 @@ public class TrainObservationScheduler {
     private final TrainObservationService trainObservationService;
 
     private final List<String> stationsToTrack = List.of(
+        "Dublin Connolly",
+        "Drumcondra",
+        "Broombridge",
         "Maynooth",
-        "Mullingar"
+        "Kilcock",
+        "Enfield",
+        "Mullingar",
+        "Edgeworthstown",
+        "Longford",
+        "Dromod",
+        "Carrick On Shannon",
+        "Boyle",
+        "Ballymote",
+        "Collooney",
+        "Sligo"
     );
 
     public TrainObservationScheduler(TrainObservationService trainObservationService) {
