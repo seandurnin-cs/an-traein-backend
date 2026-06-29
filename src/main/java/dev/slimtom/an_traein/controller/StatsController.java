@@ -1,6 +1,7 @@
 package dev.slimtom.an_traein.controller;
 
 import dev.slimtom.an_traein.dto.StationStats;
+import dev.slimtom.an_traein.dto.StationServiceStats;
 import dev.slimtom.an_traein.service.TrainObservationService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,8 +17,15 @@ public class StatsController {
         this.trainObservationService = trainObservationService;
     }
 
-    @GetMapping("/stats/stations")
+    @GetMapping("/stats/stations/observations")
     public List<StationStats> getStationStats() {
         return trainObservationService.getStationStats();
     }
+
+    @GetMapping("/stats/stations/services")
+    public List<StationServiceStats> getStationServiceStats() {
+        return trainObservationService.getStationServiceStats();
+    }
+
+
 }

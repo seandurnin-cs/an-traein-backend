@@ -16,6 +16,7 @@ import dev.slimtom.an_traein.model.TrainObservation;
 import dev.slimtom.an_traein.parser.IrishRailXmlParser;
 import dev.slimtom.an_traein.repository.TrainObservationRepository;
 import dev.slimtom.an_traein.dto.StationStats;
+import dev.slimtom.an_traein.dto.StationServiceStats;
 
 @Service
 public class TrainObservationService {
@@ -112,6 +113,103 @@ public class TrainObservationService {
                     .sorted(Comparator.comparing(StationStats::getStationName))
                     .toList();
                         
+    }
+
+    public List<StationServiceStats> getStationServiceStats() {
+        List<TrainObservation> observations =
+            trainObservationRepository.findByIdGreaterThanEqual(minObservationIdForStats);
+
+        Map<String, List<TrainObservation>> observationsByService =
+            observations.stream()
+                .collect(Collectors.groupingBy(
+                    observation ->
+                        observation.getTrainDate() + "|" +
+                        observation.getTrainCode() + "|" +
+                        observation.getOrigin() + "|" +
+                        observation.getDestination() + "|" +
+                        observation.getOriginTime() + "|" +
+                        observation.getStationCode()
+                ));
+
+        List<StationServiceEventSummary> stationServiceEvents =
+                observationsByService.values().stream()
+                    .map(serviceObservations -> {
+                        TrainObservation firstObservation = serviceObservations.get(0);
+
+                        List<Integer> cleanLateValues = serviceObservations.stream()
+                            .map(observation -> cleanLateValue(observation.getLate()))
+                            .filter(cleanLate -> cleanLate != null)
+                            .toList();
+
+                        if(cleanLateValues.isEmpty()) {
+                            return null;
+                        }
+
+                        int maxLateMinutes = cleanLateValues.stream()
+                            .mapToInt(Integer::intValue)
+                            .max()
+                            .orElse(0);
+
+                        return new StationServiceEventSummary(
+                            firstObservation.getStationFullName(),
+                            firstObservation.getStationCode(),
+                            maxLateMinutes
+                        );
+                    })
+                    .filter(event -> event != null)
+                    .toList();
+
+        Map<String, List<StationServiceEventSummary>> eventsByStation =
+            stationServiceEvents.stream()
+                .collect(Collectors.groupingBy(
+                    event -> event.stationCode() + "|" + event.stationName()
+                ));
+
+        return eventsByStation.values().stream()
+            .map(stationEvents -> {
+                StationServiceEventSummary firstEvent = stationEvents.get(0);
+
+                long serviceCount = stationEvents.size();
+
+                long delayedServiceCount = stationEvents.stream()
+                    .filter(event -> event.maxLateMinutes() > 1)
+                    .count();
+
+                double delayedServicePercentage =
+                    serviceCount == 0
+                        ? 0.0
+                        : ((double) delayedServiceCount / serviceCount) * 100.0;
+
+                double averageMaxLateMinutes = stationEvents.stream()
+                    .mapToInt(StationServiceEventSummary::maxLateMinutes)
+                    .average()
+                    .orElse(0.0);
+
+                int maxLateMinutes = stationEvents.stream()
+                    .mapToInt(StationServiceEventSummary::maxLateMinutes)
+                    .max()
+                    .orElse(0);
+
+                return new StationServiceStats(
+                    firstEvent.stationName(),
+                    firstEvent.stationCode(),
+                    serviceCount,
+                    delayedServiceCount,
+                    roundToOneDecimalPlace(delayedServicePercentage),
+                    roundToOneDecimalPlace(averageMaxLateMinutes),
+                    maxLateMinutes
+                );
+            })
+            .sorted(Comparator.comparing(StationServiceStats::getStationName))
+            .toList();
+    }
+
+    private record StationServiceEventSummary(
+        String stationName,
+        String stationCode,
+        int maxLateMinutes
+    ) {
+
     }
 
     private double roundToOneDecimalPlace(double value) {
