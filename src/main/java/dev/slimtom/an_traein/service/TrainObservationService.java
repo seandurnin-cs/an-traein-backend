@@ -80,19 +80,23 @@ public class TrainObservationService {
         return observationsByStation.values().stream()
                     .map(stationObservations -> {
                         TrainObservation firstObservation = stationObservations.get(0);
-                        long observationCount = stationObservations.size();
+                        List<Integer> cleanLateValues = stationObservations.stream()
+                            .map(observation -> cleanLateValue(observation.getLate()))
+                            .filter(cleanLate -> cleanLate != null)
+                            .toList();
+                        long observationCount = cleanLateValues.size();
 
-                        long delayedObservationCount = stationObservations.stream()
-                            .filter(observation -> observation.getLate() > 0)
+                        long delayedObservationCount = cleanLateValues.stream()
+                            .filter(late -> late > 0)
                             .count();
 
-                        double averageLateMinutes = stationObservations.stream()
-                            .mapToInt(TrainObservation::getLate)
+                        double averageLateMinutes = cleanLateValues.stream()
+                            .mapToInt(Integer::intValue)
                             .average()
                             .orElse(0.0);
 
-                        int maxLateMinutes = stationObservations.stream()
-                            .mapToInt(TrainObservation::getLate)
+                        int maxLateMinutes = cleanLateValues.stream()
+                            .mapToInt(Integer::intValue)
                             .max()
                             .orElse(0);
 
@@ -112,6 +116,18 @@ public class TrainObservationService {
 
     private double roundToOneDecimalPlace(double value) {
         return Math.round(value * 10.0) / 10.0;
+    }
+
+    private Integer cleanLateValue(int rawLate) {
+        if(rawLate >= 1380 && rawLate <= 1500) {
+            return rawLate - 1440;
+        }
+
+        if(rawLate < -30) {
+            return null;
+        }
+
+        return rawLate;
     }
 
 }
