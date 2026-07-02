@@ -171,14 +171,61 @@ public class TrainObservationService {
 
                 long serviceCount = stationEvents.size();
 
-                long delayedServiceCount = stationEvents.stream()
-                    .filter(event -> event.maxLateMinutes() > 1)
+                long onTimeServiceCount = stationEvents.stream()
+                    .filter(event -> event.maxLateMinutes() <= 1)
                     .count();
+
+                long minorDelayServiceCount = stationEvents.stream()
+                    .filter(event -> event.maxLateMinutes() > 1 && event.maxLateMinutes() <= 5)
+                    .count();
+
+                long moderateDelayServiceCount = stationEvents.stream()
+                    .filter(event -> event.maxLateMinutes() > 5 && event.maxLateMinutes() <= 10)
+                    .count();
+
+                long significantDelayServiceCount = stationEvents.stream()
+                    .filter(event -> event.maxLateMinutes() > 10 && event.maxLateMinutes() <= 15)
+                    .count();
+
+                long majorDelayServiceCount = stationEvents.stream()
+                    .filter(event -> event.maxLateMinutes() > 15)
+                    .count();
+
+                long delayedServiceCount = 
+                    minorDelayServiceCount
+                        + moderateDelayServiceCount
+                        + significantDelayServiceCount
+                        + majorDelayServiceCount;
 
                 double delayedServicePercentage =
                     serviceCount == 0
                         ? 0.0
                         : ((double) delayedServiceCount / serviceCount) * 100.0;
+
+                double minorDelayPercentage =
+                    serviceCount == 0
+                        ? 0.0
+                        : ((double) minorDelayServiceCount / serviceCount) * 100.0;
+
+                double moderateDelayPercentage =
+                    serviceCount == 0
+                        ? 0.0
+                        : ((double) moderateDelayServiceCount / serviceCount) * 100.0;
+
+                double significantDelayPercentage =
+                    serviceCount == 0
+                        ? 0.0
+                        : ((double) significantDelayServiceCount / serviceCount) * 100.0;
+
+                double majorDelayPercentage =
+                    serviceCount == 0
+                        ? 0.0
+                        : ((double) majorDelayServiceCount / serviceCount) * 100.0;
+
+                double onTimePercentage =
+                    serviceCount == 0
+                        ? 0.0
+                        : ((double) onTimeServiceCount / serviceCount) * 100.0;
 
                 double averageMaxLateMinutes = stationEvents.stream()
                     .mapToInt(StationServiceEventSummary::maxLateMinutes)
@@ -197,7 +244,17 @@ public class TrainObservationService {
                     delayedServiceCount,
                     roundToOneDecimalPlace(delayedServicePercentage),
                     roundToOneDecimalPlace(averageMaxLateMinutes),
-                    maxLateMinutes
+                    maxLateMinutes,
+                    onTimeServiceCount,
+                    minorDelayServiceCount,
+                    moderateDelayServiceCount,
+                    significantDelayServiceCount,
+                    majorDelayServiceCount,
+                    roundToOneDecimalPlace(onTimePercentage),
+                    roundToOneDecimalPlace(minorDelayPercentage),
+                    roundToOneDecimalPlace(moderateDelayPercentage),
+                    roundToOneDecimalPlace(significantDelayPercentage),
+                    roundToOneDecimalPlace(majorDelayPercentage)
                 );
             })
             .sorted(Comparator.comparing(StationServiceStats::getStationName))

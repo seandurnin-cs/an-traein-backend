@@ -13,13 +13,13 @@ public class StationServiceStats {
     private final long onTimeServiceCount;
     private final long minorDelayServiceCount;
     private final long moderateDelayServiceCount;
-    private final long signifficantDelayServiceCount;
+    private final long significantDelayServiceCount;
     private final long majorDelayServiceCount;
 
     private final double onTimePercentage;
     private final double minorDelayPercentage;
     private final double moderateDelayPercentage;
-    private final double signifficantDelayPercentage;
+    private final double significantDelayPercentage;
     private final double majorDelayPercentage;
 
     public StationServiceStats(
