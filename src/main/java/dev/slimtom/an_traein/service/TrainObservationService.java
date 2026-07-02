@@ -18,15 +18,17 @@ import dev.slimtom.an_traein.parser.IrishRailXmlParser;
 import dev.slimtom.an_traein.repository.TrainObservationRepository;
 import dev.slimtom.an_traein.dto.StationStats;
 import dev.slimtom.an_traein.dto.StationServiceStats;
+import dev.slimtom.an_traein.dto.ServiceRunStats;
 
-@Service public class TrainObservationService {
+@Service
+public class TrainObservationService {
     private final IrishRailClient irishRailClient;
     private final IrishRailXmlParser irishRailXmlParser;
     private final TrainObservationRepository trainObservationRepository;
     @Value("${antraein.stats.min-observation-id:1}")
     private Long minObservationIdForStats;
-    private static final Set<String>DUBLIN_SLIGO_STATION_CODES=Set.of("CNLLY","DCDRA","BBRDG","MYNTH","KCOCK","ENFLD","MLGAR","ETOWN","LFORD","DRMOD","CKOSH","BOYLE","BMOTE","COLNY","SLIGO");
-
+    private static final Set<String> DUBLIN_SLIGO_STATION_CODES = Set.of("CNLLY", "DCDRA", "BBRDG", "MYNTH", "KCOCK",
+            "ENFLD", "MLGAR", "ETOWN", "LFORD", "DRMOD", "CKOSH", "BOYLE", "BMOTE", "COLNY", "SLIGO");
 
     public TrainObservationService(IrishRailClient irishRailClient, IrishRailXmlParser irishRailXmlParser,
             TrainObservationRepository trainObservationRepository) {
@@ -119,9 +121,9 @@ import dev.slimtom.an_traein.dto.StationServiceStats;
         List<TrainObservation> observations = trainObservationRepository
                 .findByIdGreaterThanEqual(minObservationIdForStats);
 
-                observations = observations.stream()
-                    .filter(observation -> DUBLIN_SLIGO_STATION_CODES.contains(observation.getStationCode()))
-                    .toList();
+        observations = observations.stream()
+                .filter(observation -> DUBLIN_SLIGO_STATION_CODES.contains(observation.getStationCode()))
+                .toList();
 
         Map<String, List<TrainObservation>> observationsByService = observations.stream()
                 .collect(Collectors.groupingBy(
@@ -248,6 +250,84 @@ import dev.slimtom.an_traein.dto.StationServiceStats;
                 })
                 .sorted(Comparator.comparing(StationServiceStats::getStationName))
                 .toList();
+    }
+
+    public List<ServiceRunStats> getServiceStats() {
+        List<TrainObservation> observations = trainObservationRepository
+                .findByIdGreaterThanEqual(minObservationIdForStats);
+
+        observations = observations.stream()
+                .filter(observation -> DUBLIN_SLIGO_STATION_CODES.contains(observation.getStationCode()))
+                .toList();
+
+        Map<String, List<TrainObservation>> observationsByService = observations.stream()
+                .collect(Collectors.groupingBy(
+                        observation -> observation.getTrainDate() + "|" +
+                                observation.getTrainCode() + "|" +
+                                observation.getOrigin() + "|" +
+                                observation.getDestination() + "|" +
+                                observation.getOriginTime()));
+
+        return observationsByService.values().stream()
+            .map(serviceObservations -> {
+                TrainObservation firstObservation = serviceObservations.get(0);
+
+                Map<String, List<TrainObservation>> observationsByStation =
+                    serviceObservations.stream()
+                        .collect(Collectors.groupingBy(TrainObservation::getStationCode));
+
+                List<Integer> stationMaxLateValues =
+                    observationsByStation.values().stream()
+                        .map(stationObservations -> {
+                            List<Integer> cleanLateValues = stationObservations.stream()
+                                .map(observation -> cleanLateValue(observation.getLate()))
+                                .filter(cleanLate -> cleanLate != null)
+                                .toList();
+
+                            if(cleanLateValues.isEmpty()) {
+                                return null;
+                            }
+
+                            return cleanLateValues.stream()
+                                .mapToInt(Integer::intValue)
+                                .max()
+                                .orElse(0);
+                        })
+                        .filter(maxLate -> maxLate != null)
+                        .toList();
+                if(stationMaxLateValues.isEmpty()){
+                    return null;
+                }
+
+                                long stationCount = stationMaxLateValues.size();
+
+                double averageMaxLateMinutes = stationMaxLateValues.stream()
+                        .mapToInt(Integer::intValue)
+                        .average()
+                        .orElse(0.0);
+
+                int maxLateMinutes = stationMaxLateValues.stream()
+                        .mapToInt(Integer::intValue)
+                        .max()
+                        .orElse(0);
+
+                return new ServiceRunStats(
+                        firstObservation.getTrainCode(),
+                        firstObservation.getTrainDate(),
+                        firstObservation.getOrigin(),
+                        firstObservation.getDestination(),
+                        firstObservation.getOriginTime(),
+                        stationCount,
+                        roundToOneDecimalPlace(averageMaxLateMinutes),
+                        maxLateMinutes
+                );
+            })
+            .filter(serviceRunStats -> serviceRunStats != null)
+            .sorted(Comparator
+                .comparing(ServiceRunStats::getTrainDate)
+                .thenComparing(ServiceRunStats::getOriginTime)
+                .thenComparing(ServiceRunStats::getTrainCode))
+            .toList();
     }
 
     private record StationServiceEventSummary(
